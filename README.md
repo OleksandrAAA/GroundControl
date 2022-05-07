@@ -1,9 +1,5 @@
 # Ground Control
 
----------------------------------------------
-|     *  GroundControl Project *    |
----------------------------------------------
-
 ### Installation
 
 ```shell script
@@ -15,8 +11,6 @@ npm run worker-blockprocessor
 npm run worker-processmempool
 npm run worker-sender
 ```
-
-Works well on Heroku (you'll need `JawsDB Maria` addon)
 
 ### Environment variables
 
