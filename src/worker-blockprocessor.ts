@@ -32,7 +32,7 @@ const LAST_PROCESSED_BLOCK = "LAST_PROCESSED_BLOCK";
 async function processBlock(blockNum, sendQueueRepository: Repository<SendQueue>) {
   console.log("processing new block", +blockNum);
   const responseGetblockhash = await client.request("getblockhash", [blockNum]);
-  const responseGetblock = await client.request("getblock", [responseGetblockhash.result, 2]);
+  const responseGetblock = await client.request("getblock", [responseGetblockhash.result]);
   const addresses: string[] = [];
   const allPotentialPushPayloadsArray: Components.Schemas.PushNotificationOnchainAddressGotPaid[] = [];
   const txids: string[] = [];
