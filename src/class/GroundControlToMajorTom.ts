@@ -78,7 +78,7 @@ export class GroundControlToMajorTom {
     const fcmPayload = {
       data: {},
       notification: {
-        title: "+" + pushNotification.sat + " sats",
+        title: "+" + (pushNotification.sat / 100000000) + " CHESS",
         body: "Received on " + GroundControlToMajorTom.shortenAddress(pushNotification.address),
         badge: pushNotification.badge,
         tag: pushNotification.txid,
@@ -89,7 +89,7 @@ export class GroundControlToMajorTom {
       aps: {
         badge: pushNotification.badge,
         alert: {
-          title: "+" + pushNotification.sat + " sats",
+          title: "+" + (pushNotification.sat / 100000000) + " CHESS",
           body: "Received on " + GroundControlToMajorTom.shortenAddress(pushNotification.address),
         },
         sound: "default",
@@ -106,7 +106,7 @@ export class GroundControlToMajorTom {
       data: {},
       notification: {
         body: "Paid: " + (pushNotification.memo || "your invoice"),
-        title: "+" + pushNotification.sat + " sats",
+        title: "+" + (pushNotification.sat / 100000000) + " CHESS",
         badge: pushNotification.badge,
         tag: pushNotification.hash,
       },
@@ -116,7 +116,7 @@ export class GroundControlToMajorTom {
       aps: {
         badge: pushNotification.badge,
         alert: {
-          title: "+" + pushNotification.sat + " sats",
+          title: "+" + (pushNotification.sat / 100000000) + " CHESS",
           body: "Paid: " + (pushNotification.memo || "your invoice"),
         },
         sound: "default",
