@@ -1,12 +1,11 @@
 openapi: 3.0.0
 info:
   title: GroundControl push server API
-  description: Push notifications server for BlueWallet
+  description: Push notifications server for Chess032Wallet
   version: 0.0.12
 servers:
-  - url: http://localhost:3001
-  - url: https://groundcontrol-bluewallet-stg.herokuapp.com
-  - url: https://groundcontrol-bluewallet.herokuapp.com
+  - url: http://localhost:8001
+
 paths:
   /lightningInvoiceGotSettled:
     post:

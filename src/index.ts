@@ -60,9 +60,9 @@ createConnection({
     });
     app.use(limiter);
 
-    app.listen(process.env.PORT || 3001);
+    app.listen(process.env.PORT || 8001);
 
     console.log(require("fs").readFileSync("./bowie.txt").toString("ascii"));
-    console.log("GroundControl server has started on port ", process.env.PORT || 3001);
+    console.log("GroundControl server has started on port ", process.env.PORT || 8001);
   })
   .catch((error) => console.log(error));
