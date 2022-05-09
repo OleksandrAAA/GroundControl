@@ -45,7 +45,7 @@ async function processMempool() {
     if (!processedTxids[txid]) rpcBatch.push(client.request("getrawtransaction", [txid, true], undefined, false));
     if (rpcBatch.length >= batchSize || countTxidsProcessed === responseGetrawmempool.result.length) {
       const startBatch = +new Date();
-      // got enough txids lets batch fetch them from bitcoind rpc
+      // got enough txids lets batch fetch them from chesscoind rpc
       const responses = await client.request(rpcBatch);
       for (const response of responses) {
         if (response.result && response.result.vout) {

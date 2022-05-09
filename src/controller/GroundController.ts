@@ -24,7 +24,7 @@ export class GroundController {
   private sendQueueRepository = getRepository(SendQueue);
 
   /**
-   * Submit bitcoin addressess that you wish to be notified about to specific push token. Token serves as unique identifier of a device/user. Also, OS of the token
+   * Submit chesscoin addressess that you wish to be notified about to specific push token. Token serves as unique identifier of a device/user. Also, OS of the token
    *
    * @param request
    * @param response
@@ -51,7 +51,7 @@ export class GroundController {
 
     // todo: refactor into single batch save
     for (const address of body.addresses) {
-      // todo: validate bitcoin address
+      // todo: validate chesscoin address
       console.log(body.token, "->", address);
       try {
         await this.tokenToAddressRepository.save({

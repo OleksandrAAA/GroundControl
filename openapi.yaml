@@ -21,7 +21,7 @@ paths:
 
   /majorTomToGroundControl:
     post:
-      summary: "Associate bitcoin addressess / ln preimage hashes / txids that you wish to be notified about to specific push token. Token serves as unique identifier of a device/user. Also, OS of the token"
+      summary: "Associate chesscoin addressess / ln preimage hashes / txids that you wish to be notified about to specific push token. Token serves as unique identifier of a device/user. Also, OS of the token"
       requestBody:
         required: true
         content:
