@@ -38,8 +38,10 @@ async function processBlock(blockNum, sendQueueRepository: Repository<SendQueue>
   const txids: string[] = [];
   for (const tx of responseGetblock.result.tx) {
     txids.push(tx.txid);
-    if (tx.vout) {
-      for (const output of tx.vout) {
+    const responseGettransaction = await client.request("gettransaction", [tx])
+    
+    if (responseGettransaction.result.vout) {
+      for (const output of responseGettransaction.result.vout) {
         if (output.scriptPubKey && output.scriptPubKey.addresses) {
           for (const address of output.scriptPubKey.addresses) {
             addresses.push(address);
@@ -60,47 +62,53 @@ async function processBlock(blockNum, sendQueueRepository: Repository<SendQueue>
   }
 
   console.warn(addresses.length, "addresses paid in block");
+  console.warn(txids.length, " txids");
+  
   // allPotentialPushPayloadsArray.push({ address: "bc1qaemfnglf928kd9ma2jzdypk333au6ctu7h7led", txid: "666", sat: 1488, type: 2, token: "", os: "ios" }); // debug fixme
   // addresses.push("bc1qaemfnglf928kd9ma2jzdypk333au6ctu7h7led"); // debug fixme
 
   const query = getRepository(TokenToAddress).createQueryBuilder().where("address IN (:...address)", { address: addresses });
 
-  for (const t2a of await query.getMany()) {
-    // found all addresses that we are tracking on behalf of our users. now,
-    // iterating all addresses in a block to see if there is a match.
-    // we could only iterate tracked addresses, but that would imply deduplication which is not good (for example,
-    // in a single block user could get several incoming payments to different owned addresses)
-    // cycle in cycle is less than optimal, but we can live with that for now
-    for (let payload of allPotentialPushPayloadsArray) {
-      if (t2a.address === payload.address) {
-        process.env.VERBOSE && console.log("enqueueing", payload);
-        payload.os = t2a.os === "android" ? "android" : "ios"; // hacky
-        payload.token = t2a.token;
-        payload.type = 2;
-        payload.badge = 1;
-        await sendQueueRepository.save({
-          data: JSON.stringify(payload),
-        });
+  if (addresses.length > 0) {
+    for (const t2a of await query.getMany()) {
+      // found all addresses that we are tracking on behalf of our users. now,
+      // iterating all addresses in a block to see if there is a match.
+      // we could only iterate tracked addresses, but that would imply deduplication which is not good (for example,
+      // in a single block user could get several incoming payments to different owned addresses)
+      // cycle in cycle is less than optimal, but we can live with that for now
+      for (let payload of allPotentialPushPayloadsArray) {
+        if (t2a.address === payload.address) {
+          process.env.VERBOSE && console.log("enqueueing", payload);
+          payload.os = t2a.os === "android" ? "android" : "ios"; // hacky
+          payload.token = t2a.token;
+          payload.type = 2;
+          payload.badge = 1;
+          await sendQueueRepository.save({
+            data: JSON.stringify(payload),
+          });
+        }
       }
     }
   }
 
   // now, checking if there is a subscription to one of the mined txids:
-  const query2 = getRepository(TokenToTxid).createQueryBuilder().where("txid IN (:...txids)", { txids });
-  for (const t2txid of await query2.getMany()) {
-    const payload: Components.Schemas.PushNotificationTxidGotConfirmed = {
-      txid: t2txid.txid,
-      type: 4,
-      level: "transactions",
-      token: t2txid.token,
-      os: t2txid.os === "ios" ? "ios" : "android",
-      badge: 1,
-    };
+  if (txids.length > 0) {
+    const query2 = getRepository(TokenToTxid).createQueryBuilder().where("txid IN (:...txids)", { txids });
+    for (const t2txid of await query2.getMany()) {
+      const payload: Components.Schemas.PushNotificationTxidGotConfirmed = {
+        txid: t2txid.txid,
+        type: 4,
+        level: "transactions",
+        token: t2txid.token,
+        os: t2txid.os === "ios" ? "ios" : "android",
+        badge: 1,
+      };
 
-    process.env.VERBOSE && console.log("enqueueing", payload);
-    await sendQueueRepository.save({
-      data: JSON.stringify(payload),
-    });
+      process.env.VERBOSE && console.log("enqueueing", payload);
+      await sendQueueRepository.save({
+        data: JSON.stringify(payload),
+      });
+    }
   }
 }
 

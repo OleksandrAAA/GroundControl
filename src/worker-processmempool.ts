@@ -31,7 +31,9 @@ let sendQueueRepository: Repository<SendQueue>;
 async function processMempool() {
   process.env.VERBOSE && console.log("cached txids=", Object.keys(processedTxids).length);
   const responseGetrawmempool = await client.request("getrawmempool", []);
-  process.env.VERBOSE && console.log(responseGetrawmempool.result.length, "txs in mempool");
+  //process.env.VERBOSE && console.log(responseGetrawmempool.result.length, "txs in mempool");
+
+  console.log("[*] rawmempool = ", responseGetrawmempool);
 
   let addresses: string[] = [];
   let allPotentialPushPayloadsArray: Components.Schemas.PushNotificationOnchainAddressGotUnconfirmedTransaction[] = [];
@@ -42,7 +44,7 @@ async function processMempool() {
   for (const txid of responseGetrawmempool.result) {
     countTxidsProcessed++;
     if (!txid) continue;
-    if (!processedTxids[txid]) rpcBatch.push(client.request("getrawtransaction", [txid, true], undefined, false));
+    if (!processedTxids[txid]) rpcBatch.push(client.request("getrawtransaction", [txid, true]));
     if (rpcBatch.length >= batchSize || countTxidsProcessed === responseGetrawmempool.result.length) {
       const startBatch = +new Date();
       // got enough txids lets batch fetch them from chesscoind rpc
