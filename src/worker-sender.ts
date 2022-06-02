@@ -54,7 +54,7 @@ createConnection({
     while (1) {
       const record = await sendQueueRepository.findOne();
       if (!record) {
-        await new Promise((resolve) => setTimeout(resolve, 1000, false));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         continue;
       }
       // TODO: we could atomically lock this record via mariadb's GET_LOCK and typeorm's raw query, and that would
@@ -62,19 +62,10 @@ createConnection({
       let payload;
       try {
         payload = JSON.parse(record.data);
-      } catch (_) {
-        process.env.VERBOSE && console.warn("bad json in data:", record.data);
-        await sendQueueRepository.remove(record);
-        continue;
-      }
+      } catch (_) {}
 
       let tokenConfig = await tokenConfigurationRepository.findOne({ os: payload.os, token: payload.token });
       if (!tokenConfig) {
-        if (!payload.os || !payload.token) {
-          process.env.VERBOSE && console.warn("no os or token in payload:", payload);
-          await sendQueueRepository.remove(record);
-          continue;
-        }
         tokenConfig = new TokenConfiguration();
         tokenConfig.os = payload.os;
         tokenConfig.token = payload.token;
@@ -105,7 +96,7 @@ createConnection({
       }
 
       const timeoutId = setTimeout(() => {
-        console.error("timeout pushing to token, comitting suicide");
+        console.error('timeout pushing to token, comitting suicide');
         process.exit(2);
       }, 21000);
       switch (payload.type) {

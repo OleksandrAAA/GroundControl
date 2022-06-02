@@ -32,16 +32,14 @@ const LAST_PROCESSED_BLOCK = "LAST_PROCESSED_BLOCK";
 async function processBlock(blockNum, sendQueueRepository: Repository<SendQueue>) {
   console.log("processing new block", +blockNum);
   const responseGetblockhash = await client.request("getblockhash", [blockNum]);
-  const responseGetblock = await client.request("getblock", [responseGetblockhash.result]);
+  const responseGetblock = await client.request("getblock", [responseGetblockhash.result, 2]);
   const addresses: string[] = [];
   const allPotentialPushPayloadsArray: Components.Schemas.PushNotificationOnchainAddressGotPaid[] = [];
   const txids: string[] = [];
   for (const tx of responseGetblock.result.tx) {
     txids.push(tx.txid);
-    const responseGettransaction = await client.request("gettransaction", [tx])
-    
-    if (responseGettransaction.result.vout) {
-      for (const output of responseGettransaction.result.vout) {
+    if (tx.vout) {
+      for (const output of tx.vout) {
         if (output.scriptPubKey && output.scriptPubKey.addresses) {
           for (const address of output.scriptPubKey.addresses) {
             addresses.push(address);
@@ -62,8 +60,6 @@ async function processBlock(blockNum, sendQueueRepository: Repository<SendQueue>
   }
 
   console.warn(addresses.length, "addresses paid in block");
-  console.warn(txids.length, " txids");
-  
   // allPotentialPushPayloadsArray.push({ address: "bc1qaemfnglf928kd9ma2jzdypk333au6ctu7h7led", txid: "666", sat: 1488, type: 2, token: "", os: "ios" }); // debug fixme
   // addresses.push("bc1qaemfnglf928kd9ma2jzdypk333au6ctu7h7led"); // debug fixme
 
@@ -150,7 +146,7 @@ createConnection({
       const responseGetblockcount = await client.request("getblockcount", []);
 
       if (+responseGetblockcount.result <= +keyVal.value) {
-        await new Promise((resolve) => setTimeout(resolve, 60000, false));
+        await new Promise((resolve) => setTimeout(resolve, 60000));
         continue;
       }
 

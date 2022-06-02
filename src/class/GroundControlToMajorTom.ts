@@ -157,24 +157,6 @@ export class GroundControlToMajorTom {
           responseJson[name] = headers[name];
         }
       });
-      request.on("error", (err) => {
-        console.error("Apple push error:", err);
-
-        const responseJson = {};
-        responseJson["error"] = err;
-        client.close();
-
-        const PushLogRepository = getRepository(PushLog);
-        PushLogRepository.save({
-          token: token,
-          os: "ios",
-          payload: JSON.stringify(apnsPayload),
-          response: JSON.stringify(responseJson),
-          success: responseJson[":status"] === 200,
-        });
-
-        resolve([apnsPayload, responseJson]);
-      });
 
       request.setEncoding("utf8");
 
