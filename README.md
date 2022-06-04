@@ -20,7 +20,7 @@ Set them as env variables or put them into `.env` file in project root dir.
 - `FCM_SERVER_KEY` hex encoded
 - `APNS_PEM` hex encoded
 - `BITCOIN_RPC` for example `http://username:password@host:7324`
-- `APNS_TOPIC` for example `io.bluewallet.bluewallet`
+- `APNS_TOPIC` for example `com.electrum.chess032wallet`
 
 ### Getting certificates
 

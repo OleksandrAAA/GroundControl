@@ -5,6 +5,7 @@ import { SendQueue } from "./entity/SendQueue";
 import { GroundControlToMajorTom } from "./class/GroundControlToMajorTom";
 import { TokenConfiguration } from "./entity/TokenConfiguration";
 import { NOTIFICATION_LEVEL_NEWS, NOTIFICATION_LEVEL_PRICE, NOTIFICATION_LEVEL_TIPS, NOTIFICATION_LEVEL_TRANSACTIONS } from "./openapi/constants";
+
 require("dotenv").config();
 const url = require("url");
 const parsed = url.parse(process.env.JAWSDB_MARIA_URL);
@@ -54,7 +55,7 @@ createConnection({
     while (1) {
       const record = await sendQueueRepository.findOne();
       if (!record) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000, false));
         continue;
       }
       // TODO: we could atomically lock this record via mariadb's GET_LOCK and typeorm's raw query, and that would
@@ -62,10 +63,19 @@ createConnection({
       let payload;
       try {
         payload = JSON.parse(record.data);
-      } catch (_) {}
+      } catch (_) {
+        process.env.VERBOSE && console.warn("bad json in data:", record.data);
+        await sendQueueRepository.remove(record);
+        continue;
+      }
 
       let tokenConfig = await tokenConfigurationRepository.findOne({ os: payload.os, token: payload.token });
       if (!tokenConfig) {
+        if (!payload.os || !payload.token) {
+          process.env.VERBOSE && console.warn("no os or token in payload:", payload);
+          await sendQueueRepository.remove(record);
+          continue;
+        }
         tokenConfig = new TokenConfiguration();
         tokenConfig.os = payload.os;
         tokenConfig.token = payload.token;

@@ -32,7 +32,7 @@ const LAST_PROCESSED_BLOCK = "LAST_PROCESSED_BLOCK";
 async function processBlock(blockNum, sendQueueRepository: Repository<SendQueue>) {
   console.log("processing new block", +blockNum);
   const responseGetblockhash = await client.request("getblockhash", [blockNum]);
-  const responseGetblock = await client.request("getblock", [responseGetblockhash.result, 2]);
+  const responseGetblock = await client.request("getblock", [responseGetblockhash.result, true]);
   const addresses: string[] = [];
   const allPotentialPushPayloadsArray: Components.Schemas.PushNotificationOnchainAddressGotPaid[] = [];
   const txids: string[] = [];
@@ -50,7 +50,7 @@ async function processBlock(blockNum, sendQueueRepository: Repository<SendQueue>
               type: 2,
               level: "transactions",
               token: "",
-              os: "ios",
+              os: "android",
             };
             allPotentialPushPayloadsArray.push(payload);
           }
@@ -59,7 +59,9 @@ async function processBlock(blockNum, sendQueueRepository: Repository<SendQueue>
     }
   }
 
-  console.warn(addresses.length, "addresses paid in block");
+  process.env.VERBOSE && console.log(addresses.length, "addresses paid in block");
+  process.env.VERBOSE && console.log(txids.length, " txids");
+  
   // allPotentialPushPayloadsArray.push({ address: "bc1qaemfnglf928kd9ma2jzdypk333au6ctu7h7led", txid: "666", sat: 1488, type: 2, token: "", os: "ios" }); // debug fixme
   // addresses.push("bc1qaemfnglf928kd9ma2jzdypk333au6ctu7h7led"); // debug fixme
 
@@ -136,6 +138,7 @@ createConnection({
 
     while (1) {
       const keyVal = await KeyValueRepository.findOne({ key: LAST_PROCESSED_BLOCK });
+      process.env.VERBOSE && console.log("keyval = ", keyVal);
       if (!keyVal) {
         // if no info saved in database we assume we are all caught up and wait for the next block
         const responseGetblockcount = await client.request("getblockcount", []);
@@ -144,9 +147,10 @@ createConnection({
       }
 
       const responseGetblockcount = await client.request("getblockcount", []);
+      process.env.VERBOSE && console.log("responseGetblockcount = ", responseGetblockcount);
 
       if (+responseGetblockcount.result <= +keyVal.value) {
-        await new Promise((resolve) => setTimeout(resolve, 60000));
+        await new Promise((resolve) => setTimeout(resolve, 60000, false));
         continue;
       }
 

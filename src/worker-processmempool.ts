@@ -40,6 +40,7 @@ async function processMempool() {
     const batchSize = 100;
     let countTxidsProcessed = 0;
     for (const txid of responseGetrawmempool.result) {
+    process.env.VERBOSE && console.log("txid = ", txid);
       countTxidsProcessed++;
       if (!txid) continue;
     if (!processedTxids[txid]) rpcBatch.push(client.request("getrawtransaction", [txid, 1], undefined, false));
@@ -61,7 +62,7 @@ async function processMempool() {
                     type: 3,
                     level: "transactions",
                     token: "",
-                    os: "ios",
+                  os: "android",
                   };
                   allPotentialPushPayloadsArray.push(payload);
                 }
@@ -145,7 +146,7 @@ createConnection({
       const end = +new Date();
       process.env.VERBOSE && console.log("processing mempool took", (end - start) / 1000, "sec");
       process.env.VERBOSE && console.log("-----------------------");
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000, false));
     }
   })
   .catch((error) => {
